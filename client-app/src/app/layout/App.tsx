@@ -1,110 +1,34 @@
-import { Fragment, useEffect, useState } from 'react';
+import React, { useEffect} from 'react';
 import { Container } from 'semantic-ui-react';
-import { Activity } from '../models/activity';
 import NavBar from './NavBar';
 import ActivityDashboard from '../../features/activities/dashboard/ActivityDashboard';
-import {v4 as uuid} from 'uuid';
-import agent from '../api/agent';
 import LoadingComponent from './LoadingComponent';
+import { useStore } from '../stores/store';
+import { observer } from 'mobx-react-lite';
 
 function App() {
+
+  //destructuring activityStore object since we are only interested in that
+const {activityStore} = useStore(); 
   //activities(variable) will store data & setActivities will set data
   //activities is of type Activity
-const [activities, setActivities] = useState<Activity[]>([]);
-//initial state passed is undefined
-const [selectedActivity, setSelectedActivity] = useState<Activity | undefined>(undefined);
-
-const [editMode, setEditMode] = useState(false);
-
-const [loading, setLoading] = useState(true);
-
-const [submitting, setSubmitting] = useState(false);
 
 // will get the data from endpoint and then store it in variable (activities)
 //[] -> will prevent the useEffect from getting fired again and again
 useEffect(()=> {
- agent.Activities.list().then(response => {
-  let activities: Activity[] = [];
-  response.forEach(activity => {
-    activity.date = activity.date.split('T')[0];
-    activities.push(activity);
-  })
-    setActivities(response);
-    setLoading(false)
-  })
-}, [])
+  activityStore.loadActivities();
+}, [activityStore])
 
-function handleSelectActivity(id: string) {
-setSelectedActivity(activities.find(x => x.id === id));
-}
-
-function handleCancelSelectActivity() {
-  setSelectedActivity(undefined);
-}
-
-function handleFormOpen(id?: string) {
-  id ? handleSelectActivity(id) : handleCancelSelectActivity();
-  setEditMode(true);
-}
-
-function handleFormClose() {
-  setEditMode(false);
-}
-
-function handleCreateOrEditActivity(activity: Activity) {
-  //if id exists that means we are updating an existing activity
-  //...-> used to loop over existing activities
-  //uuid() -> id & activity will be created at the same time
-  if (activity.id) {
-    agent.Activities.update(activity).then(() => {
-      setActivities([...activities.filter(x => x.id !== activity.id), activity])
-      setSelectedActivity(activity);
-      setEditMode(false);
-      setSubmitting(false);
-
-    })
-  }
-  else {
-    activity.id = uuid();
-    agent.Activities.create(activity).then(() => {
-      setActivities([...activities,activity]);
-      setSelectedActivity(activity);
-      setEditMode(false);
-      setSubmitting(false);
-
-    })
-  }
-}
-
-function handleDeleteActivity(id: string) {
-  setSubmitting(true);
-  agent.Activities.delete(id).then(() => {
-    setActivities([...activities.filter(x => x.id !== id)])
-    setSubmitting(false);
-  })
-  
-}
-
-if (loading) return <LoadingComponent content='Loading app'/>
+if (activityStore.loadingInitial) return <LoadingComponent content='Loading app'/>
 //what we render into the browser
   return (
   <>
-     <NavBar openForm={handleFormOpen}/>
+     <NavBar/>
      <Container style={{marginTop: '7em'}}>
-       <ActivityDashboard
-        activities={activities}
-        selectedActivity={selectedActivity}
-        selectActivity={handleSelectActivity}
-        cancelSelectActivity={handleCancelSelectActivity}
-        editMode={editMode}
-        openForm={handleFormOpen}
-        closeForm={handleFormClose}
-        createOrEdit={handleCreateOrEditActivity}
-        deleteActivity={handleDeleteActivity}
-        submitting={submitting} /> 
+       <ActivityDashboard /> 
      </Container>
  </>
   );
 }
-
-export default App;
+//this will make the app component observe the observables
+export default observer(App);
