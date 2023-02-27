@@ -21,7 +21,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 //Ordering of middleware is important & coors should come before authorization
-app.UseCors("CorsPolicy");
+ app.UseCors("CorsPolicy");
 
 app.UseAuthorization();
 

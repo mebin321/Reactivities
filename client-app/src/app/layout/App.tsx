@@ -5,29 +5,27 @@ import ActivityDashboard from '../../features/activities/dashboard/ActivityDashb
 import LoadingComponent from './LoadingComponent';
 import { useStore } from '../stores/store';
 import { observer } from 'mobx-react-lite';
+import { Outlet, useLocation } from 'react-router-dom';
+import HomePage from '../../features/home/Homepage';
 
 function App() {
-
-  //destructuring activityStore object since we are only interested in that
-const {activityStore} = useStore(); 
-  //activities(variable) will store data & setActivities will set data
-  //activities is of type Activity
-
-// will get the data from endpoint and then store it in variable (activities)
-//[] -> will prevent the useEffect from getting fired again and again
-useEffect(()=> {
-  activityStore.loadActivities();
-}, [activityStore])
-
-if (activityStore.loadingInitial) return <LoadingComponent content='Loading app'/>
 //what we render into the browser
+//when we load a route the outlet gets swapped with the actual component thta we are loading
+//eg. when we load activities, outlet will be swapped with activitydashboard
+
+//this will give the path of which url the user has gone to
+const location = useLocation();
   return (
-  <>
+   <>
+     {location.pathname === '/' ? <HomePage /> : (
+      <>
      <NavBar/>
      <Container style={{marginTop: '7em'}}>
-       <ActivityDashboard /> 
+       <Outlet /> 
      </Container>
- </>
+      </>
+     )}   
+    </>
   );
 }
 //this will make the app component observe the observables

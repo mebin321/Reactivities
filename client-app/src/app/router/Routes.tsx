@@ -1,0 +1,26 @@
+import { RouteObject } from "react-router";
+import { createBrowserRouter } from "react-router-dom";
+import ActivityDashboard from "../../features/activities/dashboard/ActivityDashboard";
+import ActivityDetails from "../../features/activities/details/ActivityDetails";
+import ActivityForm from "../../features/activities/form/ActivityForm";
+import HomePage from "../../features/home/Homepage";
+import App from "../layout/App";
+
+//here we have mentioned the path for the section we want to go toy
+///:id -> root parameter to go and get the individual activity
+//when something changes our state will be reset
+export const routes : RouteObject[] = [
+    {
+        path: '/',
+        element: <App />,
+        children: [
+            {path: 'activities', element: <ActivityDashboard />},
+            {path: 'activities/:id', element: <ActivityDetails />},
+            {path: 'createActivity', element: <ActivityForm key='create' />},
+            {path: 'manage/:id', element: <ActivityForm key='manage' />},    
+        ]
+    }
+] 
+
+
+export const router = createBrowserRouter(routes);
